@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Onboarding test</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    button { font-size: 1.2rem; padding: 1rem 2rem; }
+    pre { background: #eee; padding: 1rem; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>Test /api/onboard</h2>
+  <button id="btn">🎤 Start recording</button>
+  <p id="status"></p>
+  <audio id="player" controls style="display:none"></audio>
+  <pre id="out"></pre>
+
+  <script>
+    let rec, chunks = [];
+    const btn = document.getElementById("btn");
+    const status = document.getElementById("status");
+    const out = document.getElementById("out");
+    const player = document.getElementById("player");
+
+    btn.onclick = async () => {
+      if (rec && rec.state === "recording") {
+        rec.stop();
+        btn.textContent = "🎤 Start recording";
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      rec = new MediaRecorder(stream);
+      chunks = [];
+      rec.ondataavailable = (e) => chunks.push(e.data);
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks, { type: rec.mimeType });
+        player.src = URL.createObjectURL(blob);
+        player.style.display = "block";
+        status.textContent = "Sending to /api/onboard ...";
+        const form = new FormData();
+        form.append("audio", blob, "audio.webm");
+        const res = await fetch("/api/onboard", { method: "POST", body: form });
+        out.textContent = res.status + "\n" + JSON.stringify(await res.json(), null, 2);
+        status.textContent = "Done";
+      };
+      rec.start();
+      btn.textContent = "⏹ Stop and send";
+    };
+  </script>
+</body>
+</html>
