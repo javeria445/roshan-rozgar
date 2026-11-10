@@ -27,5 +27,22 @@ export async function GET(req: Request) {
     })
     .sort((a, b) => a.score - b.score);
 
-  return NextResponse.json({ workers: result });
+  return NextResponse.json({ workers: result });  
+}
+
+export async function POST(req: Request) {
+  const b = await req.json();
+  const worker = await prisma.worker.create({
+    data: {
+      name: b.name ?? "New Worker",
+      trade: b.trade,
+      skills: JSON.stringify(b.skills ?? []),
+      areas: JSON.stringify(b.areas ?? []),
+      experience: Number(b.experience ?? 0),
+      visitRate: Number(b.visitRate ?? 0),
+      lat: Number(b.lat ?? 33.6844),
+      lng: Number(b.lng ?? 73.0479),
+    },
+  });
+  return NextResponse.json({ worker });
 }
