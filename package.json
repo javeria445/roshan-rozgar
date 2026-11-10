@@ -8,6 +8,10 @@
     "start": "next start",
     "lint": "eslint"
   },
+
+  "prisma": {
+  "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "leaflet": "^1.9.4",
@@ -35,4 +39,5 @@
     "prisma@5.22.0": true,
     "esbuild@0.28.2": true
   }
+  
 }
