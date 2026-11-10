@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Worker {
+  id           String   @id @default(cuid())
+  name         String
+  phone        String?
+  trade        String
+  skills       String   @default("[]")
+  areas        String   @default("[]")
+  experience   Int      @default(0)
+  visitRate    Int      @default(0)
+  lat          Float
+  lng          Float
+  status       String   @default("free")
+  ratingAvg    Float    @default(0)
+  ratingCount  Int      @default(0)
+  trustTags    String   @default("[]")
+  trustSummary String   @default("")
+  createdAt    DateTime @default(now())
+  jobs         Job[]
+  reviews      Review[]
+}
+
+model Customer {
+  id   String @id @default(cuid())
+  name String
+  lat  Float
+  lng  Float
+  jobs Job[]
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  customerId  String
+  workerId    String?
+  trade       String
+  description String
+  urgency     String    @default("normal")
+  status      String    @default("requested")
+  agreedPrice Int?
+  summary     String?
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  worker      Worker?   @relation(fields: [workerId], references: [id])
+  messages    Message[]
+  review      Review?
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  jobId     String
+  sender    String
+  text      String
+  audioUrl  String?
+  createdAt DateTime @default(now())
+  job       Job      @relation(fields: [jobId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  jobId     String   @unique
+  workerId  String
+  stars     Int
+  text      String   @default("")
+  tags      String   @default("[]")
+  createdAt DateTime @default(now())
+  job       Job      @relation(fields: [jobId], references: [id])
+  worker    Worker   @relation(fields: [workerId], references: [id])
+}
+
+model PriceRef {
+  id       String @id @default(cuid())
+  trade    String
+  task     String
+  minPrice Int
+  maxPrice Int
+}
